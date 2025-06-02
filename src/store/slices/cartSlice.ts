@@ -1,9 +1,12 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { Meal } from '../../services/api';
 
+interface CartItem extends Meal {
+  quantity: number;
+}
+
 interface CartState {
-  items: Meal[];
+  items: CartItem[];
   total: number;
 }
 
@@ -12,28 +15,9 @@ const initialState: CartState = {
   total: 0,
 };
 
-// RTK Query API для корзины
-export const cartApi = createApi({
-  reducerPath: 'cartApi',
-  baseQuery: fetchBaseQuery({ baseUrl: '/api' }),
-  tagTypes: ['Cart'],
-  endpoints: (builder) => ({
-    getCart: builder.query<CartState, void>({
-      query: () => 'cart',
-      providesTags: ['Cart'],
-    }),
-    updateCart: builder.mutation<CartState, Meal[]>({
-      query: (items) => ({
-        url: 'cart',
-        method: 'PUT',
-        body: items,
-      }),
-      invalidatesTags: ['Cart'],
-    }),
-  }),
-});
-
-export const { useGetCartQuery, useUpdateCartMutation } = cartApi;
+const calculateTotal = (items: CartItem[]): number => {
+  return items.reduce((total, item) => total + (item.price * item.quantity), 0);
+};
 
 const cartSlice = createSlice({
   name: 'cart',
@@ -41,16 +25,21 @@ const cartSlice = createSlice({
   reducers: {
     addToCart: (state, action: PayloadAction<Meal>) => {
       const existingItem = state.items.find(item => item.id === action.payload.id);
+      
       if (existingItem) {
-        existingItem.quantity = (existingItem.quantity || 1) + 1;
+        existingItem.quantity += 1;
       } else {
-        state.items.push({ ...action.payload, quantity: 1 });
+        state.items.push({
+          ...action.payload,
+          quantity: 1
+        });
       }
-      state.total = state.items.reduce((total, item) => total + (item.price * item.quantity), 0);
+      
+      state.total = calculateTotal(state.items);
     },
     removeFromCart: (state, action: PayloadAction<string>) => {
       state.items = state.items.filter(item => item.id !== action.payload);
-      state.total = state.items.reduce((total, item) => total + (item.price * item.quantity), 0);
+      state.total = calculateTotal(state.items);
     },
     updateQuantity: (state, action: PayloadAction<{ id: string; quantity: number }>) => {
       const item = state.items.find(item => item.id === action.payload.id);
@@ -61,7 +50,7 @@ const cartSlice = createSlice({
           item.quantity = action.payload.quantity;
         }
       }
-      state.total = state.items.reduce((total, item) => total + (item.price * item.quantity), 0);
+      state.total = calculateTotal(state.items);
     },
     clearCart: (state) => {
       state.items = [];
@@ -69,6 +58,9 @@ const cartSlice = createSlice({
     },
   },
 });
+
+// Log initial state
+console.log('Cart slice initialized with state:', JSON.parse(JSON.stringify(initialState)));
 
 export const { addToCart, removeFromCart, updateQuantity, clearCart } = cartSlice.actions;
 export default cartSlice.reducer; 

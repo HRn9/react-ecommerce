@@ -11,8 +11,8 @@ export const createDemoUser = async () => {
     
     console.log('Demo user created successfully:', userCredential.user);
     return userCredential.user;
-  } catch (error: any) {
-    if (error.code === 'auth/email-already-in-use') {
+  } catch (error: unknown) {
+    if (error instanceof Error && error.message === 'auth/email-already-in-use') {
       console.log('Demo user already exists');
       return null;
     }
@@ -26,8 +26,8 @@ export const ensureDemoUserExists = async () => {
   try {
     // Попробуем войти под демо-пользователем
     await createDemoUser();
-  } catch (error: any) {
-    if (error.code !== 'auth/email-already-in-use') {
+  } catch (error: unknown) {
+    if (error instanceof Error && error.message !== 'auth/email-already-in-use') {
       console.error('Failed to ensure demo user exists:', error);
     }
   }

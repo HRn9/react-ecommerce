@@ -4,43 +4,26 @@ import {
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
-  User
+  User,
+  createUserWithEmailAndPassword
 } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || 'dummy-api-key',
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || 'dummy-auth-domain',
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || 'dummy-project-id',
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || 'dummy-storage-bucket',
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || 'dummy-messaging-sender-id',
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || 'dummy-app-id'
+  apiKey: "AIzaSyAJxcjoEGlpvbfv1d9J4yRLTTwXEOaFrjE",
+  authDomain: "react-ecommerce-8c0c7.firebaseapp.com",
+  projectId: "react-ecommerce-8c0c7",
+  storageBucket: "react-ecommerce-8c0c7.appspot.com",
+  messagingSenderId: "1092384567890",
+  appId: "1:1092384567890:web:1234567890abcdef"
 };
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
-
-export const loginWithEmailAndPassword = async (email: string, password: string) => {
-  try {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    return userCredential.user;
-  } catch (error) {
-    throw error;
-  }
-};
-
-export const logout = async () => {
-  try {
-    await signOut(auth);
-  } catch (error) {
-    throw error;
-  }
-};
-
-export const onAuthStateChange = (callback: (user: User | null) => void) => {
-  return onAuthStateChanged(auth, callback);
-};
-
 export const db = getFirestore(app);
+
+export const signUp = async (email: string, password: string) => {
+  return createUserWithEmailAndPassword(auth, email, password);
+};
 
 export default app; 
